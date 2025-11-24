@@ -52,7 +52,7 @@ function Bio() {
                 </div>
                 <div className="md:text-2xl w-full lg:w-3/4 font-base bg-background-accent-darker p-3 tracking-tight space-y-2">
                     <p className="w-full">
-                        I’m Srivatsa, a Master of Quantitative Finance candidate at Rutgers Business School (graduating May 2025), with a background in Computer Science and hands-on experience in trading analytics, risk modelling, and DeFi research. <span className="text-transparent font-bold bg-clip-text bg-gradient-to-br from-content-primary to-content-primary-accent"> New York</span> is where I’m based while I work on pricing engines, risk tools, and research notes.
+                        I’m Srivatsa, a recent Master of Quantitative Finance student at Rutgers Business School, with a background in Computer Science and hands-on experience in trading analytics, risk modelling, and DeFi research. <span className="text-transparent font-bold bg-clip-text bg-gradient-to-br from-content-primary to-content-primary-accent"> New York</span> is where I’m based while I work on pricing engines, risk tools, and research notes.
                     </p>
                     <p className="w-full">
                         My work sits at the intersection of markets, math, and code. I enjoy taking a messy real-world problem – like pricing an interest-rate swap off SOFR/OIS curves, or stress-testing multi-year corporate cash flows – and turning it into a clean, reproducible Python workflow that people can actually use. <Typewritter 

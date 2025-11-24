@@ -179,9 +179,9 @@ Whether it's math, markets, or models, I’m drawn to anything that rewards curi
             <p>I pick up tools pretty fast, but I don’t obsess over them —
 I care more about building intuition, asking good questions,
 and understanding why something works.
-                <a href={"https://github.com/srivatsa31"} target={"_blank"} rel="noreferrer" className="font-bold text-xl mx-1 cursor-pointer" >
-                    <i className="devicon-github-original"></i>
-                </a>
+    <a href={"https://github.com/srivatsa31"} target={"_blank"} rel="noreferrer" className="font-bold text-xl mx-1 cursor-pointer" >
+        <i className="devicon-github-original"></i>
+    </a>
             </p>
         </div>
     );

@@ -2,6 +2,7 @@
   "name": "[PLACEHOLDER: Project name]",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://srivatsa31.github.io/Website",
   "dependencies": {
     "@react-three/drei": "^9.51.5",
     "@react-three/fiber": "^8.3.1",
@@ -16,7 +17,9 @@
     "build": "npm run tailwindcss && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "tailwindcss": "postcss src/tailwind.css -o src/app_tailwind.css"
+    "tailwindcss": "postcss src/tailwind.css -o src/app_tailwind.css",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
@@ -36,5 +39,7 @@
       "last 1 safari version"
     ]
   },
-  "homepage": "https://<your-github-username>.github.io/<your-repo-name>"
+  "devDependencies": {
+    "gh-pages": "^6.3.0"
+  }
 }
