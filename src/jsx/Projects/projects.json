@@ -1,0 +1,46 @@
+{
+    "categories": [
+        {
+            "name": "Selected Projects",
+            "description": "A selection of engineering and research projects focusing on fixed-income pricing, model risk, and tail-risk analysis. Each project contains a short description and tech stack.",
+            "projects": [
+                {
+                    "title": "SOFR/OIS Interest-Rate Swap Pricer",
+                    "description": "Python engine for curve bootstrapping and swap risk analytics. I built a pricing engine that bootstraps SOFR/OIS discount and forward curves from deposit, futures, and swap quotes, with both linear and cubic-spline interpolation options. On top of the curve framework, I implemented risk analytics (NPV, DV01, convexity) under parallel and key-rate shocks, roll-down analysis, and exposures.\n\nTech stack: Python, NumPy, pandas, curve bootstrapping, interpolation, DV01/convexity analytics",
+                    "website": "[PLACEHOLDER: Project 1 website URL]",
+                    "repo": "[PLACEHOLDER: Project 1 repository URL]"
+                },
+                {
+                    "title": "MBS OAS & Prepayment Analytics",
+                    "description": "Option-Adjusted Spread engine for mortgage-backed securities. Built an OAS engine using binomial trees and Monte Carlo, modelled prepayments (CPR/SMM/PSA) with drivers like rate incentives, burnout, and seasonality, and calibrated short-rate models (Hull-White / CIR) to swaption data to generate rate paths for valuation and hedge recommendations.\n\nTech stack: Python, Monte Carlo, binomial trees, short-rate modelling, prepayment modelling",
+                    "website": "[PLACEHOLDER: Project 2 website URL]",
+                    "repo": "[PLACEHOLDER: Project 2 repository URL]"
+                },
+                {
+                    "title": "Portfolio Tail Risk — VaR & Expected Shortfall",
+                    "description": "Monte Carlo + EVT for 99.9% ES and capital planning. Modeled tail risk using 10,000 Monte Carlo paths with EVT tails (GPD) to estimate 99.9% ES for multi-year corporate cash flows; built scenario and liquidity stress frameworks and a capital-planning approach.\n\nTech stack: Python, Monte Carlo simulation, EVT (GPD tails), scenario analysis, ES/VaR",
+                    "website": "[PLACEHOLDER: Project 3 website URL]",
+                    "repo": "[PLACEHOLDER: Project 3 repository URL]"
+                },
+                {
+                    "title": "Stochastic Interest-Rate & Volatility Modelling",
+                    "description": "Calibrating Vasicek, CIR, and Hull-White to market data for short-rate modelling. Used MLE-style calibration to market instruments (bonds, swaptions, caps/floors) and produced forward-looking volatility paths and surfaces for risk quantification and hedging.\n\nTech stack: Python, term-structure modelling, MLE calibration, volatility surface analysis",
+                    "website": "[PLACEHOLDER: Project 4 website URL]",
+                    "repo": "[PLACEHOLDER: Project 4 repository URL]"
+                },
+                {
+                    "title": "Model Risk Management — SR 11-7 Validation Report",
+                    "description": "Turning model risk guidance into practical controls. Developed a model risk management framework aligned with SR 11-7, including inventory and tiering, conceptual soundness checks, implementation verification, outcomes analysis, and monitoring thresholds. Produced a validation report and presentation for a graduate seminar.\n\nTech stack: Model risk, governance, documentation, validation",
+                    "website": "[PLACEHOLDER: Project 5 website URL]",
+                    "repo": "[PLACEHOLDER: Project 5 repository URL]"
+                },
+                {
+                    "title": "Real-Time Trading Dashboards at String Metaverse",
+                    "description": "Intraday P&L, Greeks, and factor-model research for digital assets. Built Python-based dashboards streaming real-time order-book and exposure data, validated derivatives P&L and Greeks for multi-token positions, and implemented factor-model pipelines and reproducible Git-based workflows.\n\nTech stack: Python, pandas/NumPy, derivatives P&L/Greeks, real-time data",
+                    "website": "[PLACEHOLDER: Project 6 website URL]",
+                    "repo": "[PLACEHOLDER: Project 6 repository URL]"
+                }
+            ]
+        }
+    ]
+}
