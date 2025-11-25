@@ -8,7 +8,7 @@ function Header() {
 
     const menu = [
         { title: "GitHub", url: "https://github.com/srivatsa31" },
-        { title: "LinkedIn", url: "www.linkedin.com/in/srivatsa-r" },
+        { title: "LinkedIn", url: "https://www.linkedin.com/in/srivatsa-r" },
         { title: "X", url: "https://x.com/SrivatsaRatako1" },
         { title: "Substack", url: "[PLACEHOLDER: MacBook Air Model URL]" },
         { title: "Projects", url: "[PLACEHOLDER: Portfolio Projects URL]" },
