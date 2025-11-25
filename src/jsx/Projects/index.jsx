@@ -73,7 +73,7 @@ function FeaturedProject({ title, description, repo, website }) {
                         website && (
                             <div className="block">
                                 <a className="inline text-content-links" href={website} target="_blank" rel="noreferrer">
-                                    {website}
+                                    Read more
                                 </a>
                             </div>
                         )
