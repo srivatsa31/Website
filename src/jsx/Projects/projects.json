@@ -13,7 +13,7 @@
                 {
                     "title": "MBS OAS & Prepayment Analytics",
                     "description": "Option-Adjusted Spread engine for mortgage-backed securities. Built an OAS engine using binomial trees and Monte Carlo, modelled prepayments (CPR/SMM/PSA) with drivers like rate incentives, burnout, and seasonality, and calibrated short-rate models (Hull-White / CIR) to swaption data to generate rate paths for valuation and hedge recommendations.\n\nTech stack: Python, Monte Carlo, binomial trees, short-rate modelling, prepayment modelling",
-                    "website": "[PLACEHOLDER: Project 2 website URL]",
+                    "website": "/mbs-oas-prepayment.html",
                     "repo": "[PLACEHOLDER: Project 2 repository URL]"
                 },
                 {

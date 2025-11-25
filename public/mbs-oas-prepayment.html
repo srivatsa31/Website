@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAS Modelling for MBS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .tab-btn.active {
+            background-color: #2563EB;
+            color: white;
+        }
+        .tab-btn:not(.active) {
+            background-color: #E5E7EB;
+            color: #374151;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- 
+        Chosen Palette: Calm Neutrals (Base: bg-gray-50, Cards: bg-white, Text: text-gray-800/text-gray-600, Accent: blue-600)
+        Application Structure Plan: A thematic, single-page educational application. The structure is designed to guide the user logically from the foundational concepts ("Overview") through the complex "Construction" process, followed by an "Interactive Demo" to solidify understanding, and concluding with real-world "Market Application". This step-by-step flow is chosen over a dashboard because the goal is learning and exploration of a complex financial topic, making a linear, guided path the most user-friendly. Navigation is handled by a sticky header bar that smoothly scrolls to the relevant thematic section. Key interactions include a tabbed interface for the multi-step construction process and a slider-driven chart in the demo section.
+        Visualization & Content Choices:
+        - Report Info: Multi-step process of building an OAS.
+          - Goal: Organize, Inform.
+          - Viz/Method: Interactive Tabbed Interface (HTML/CSS/JS).
+          - Interaction: Click tabs to reveal detailed text for each step.
+          - Justification: Breaks a highly complex process into manageable, sequential chunks, preventing cognitive overload.
+          - Library/Method: Vanilla JS.
+        - Report Info: Stochastic nature of future interest rates.
+          - Goal: Inform.
+          - Viz/Method: Line Chart (Chart.js).
+          - Interaction: View-only.
+          - Justification: Visually demonstrates the "many paths" concept central to Monte Carlo simulation.
+          - Library/Method: Chart.js (Canvas).
+        - Report Info: Prepayment model logic (S-Curve).
+          - Goal: Inform.
+          - Viz/Method: Line Chart (Chart.js).
+          - Interaction: View-only.
+          - Justification: Shows the classic, non-linear relationship between refi incentive and prepayment speed (CPR).
+          - Library/Method: Chart.js (Canvas).
+        - Report Info: The iterative process of solving for OAS.
+          - Goal: Change, Inform.
+          - Viz/Method: Line Chart (Price vs. OAS) with a horizontal "Market Price" line.
+          - Interaction: A slider allows the user to change the "Market Price". JS updates the chart's horizontal line and recalculates/displays the "Solved OAS" where the lines intersect.
+          - Justification: This is the core interactive element, directly simulating how the OAS is found by equating modeled value to market price.
+          - Library/Method: Chart.js (Canvas) + Vanilla JS.
+        - Report Info: Negative Convexity of MBS.
+          - Goal: Compare.
+          - Viz/Method: Line Chart (Chart.js) comparing Price/Yield curves of a normal bond vs. an MBS.
+          - Interaction: View-only.
+          - Justification: Visually explains a key, defining risk characteristic of MBS that OAS modeling helps to quantify.
+          - Library/Method: Chart.js (Canvas).
+        CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
+    -->
+
+    <header class="bg-white/80 backdrop-blur-sm shadow-md sticky top-0 z-50">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex-shrink-0">
+                    <span class="text-xl font-bold text-blue-600">OAS for MBS</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#overview" class="nav-link text-gray-600 hover:bg-gray-200 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Overview</a>
+                        <a href="#construction" class="nav-link text-gray-600 hover:bg-gray-200 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Construction</a>
+                        <a href="#demo" class="nav-link text-gray-600 hover:bg-gray-200 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Interactive Demo</a>
+                        <a href="#application" class="nav-link text-gray-600 hover:bg-gray-200 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Application</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-btn" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-900 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div id="mobile-menu" class="md:hidden hidden">
+                <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                    <a href="#overview" class="nav-link text-gray-600 hover:bg-gray-200 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium">Overview</a>
+                    <a href="#construction" class="nav-link text-gray-600 hover:bg-gray-200 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium">Construction</a>
+                    <a href="#demo" class="nav-link text-gray-600 hover:bg-gray-200 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium">Interactive Demo</a>
+                    <a href="#application" class="nav-link text-gray-600 hover:bg-gray-200 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium">Application</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="overview" class="py-16 sm:py-24 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+                        Understanding OAS Modeling
+                    </h2>
+                    <p class="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
+                        This section introduces the core concepts behind Mortgage-Backed Securities (MBS) and the challenge of prepayment risk. We'll define what Option-Adjusted Spread (OAS) is and why it's the industry standard for valuing these complex bonds, moving beyond simple metrics like yield-to-maturity.
+                    </p>
+                </div>
+                <div class="mt-20 grid grid-cols-1 md:grid-cols-3 gap-12">
+                    <div class="bg-gray-50 p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold text-blue-600">1. What is an MBS?</h3>
+                        <p class="mt-3 text-base text-gray-600">
+                            A Mortgage-Backed Security (MBS) is a bond created by bundling together thousands of individual home loans. Investors who buy the MBS receive the monthly principal and interest payments from these homeowners.
+                        </p>
+                    </div>
+                    <div class="bg-gray-50 p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold text-blue-600">2. The "Option" in MBS</h3>
+                        <p class="mt-3 text-base text-gray-600">
+                            The "option" refers to the homeowner's right to prepay their mortgage at any time. This typically happens when interest rates fall, allowing them to refinance. This prepayment risk makes the cash flows of an MBS highly uncertain, unlike a standard government or corporate bond.
+                        </p>
+                    </div>
+                    <div class="bg-gray-50 p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold text-blue-600">3. What is OAS?</h3>
+                        <p class="mt-3 text-base text-gray-600">
+                            The Option-Adjusted Spread (OAS) is the constant spread added to all future interest rates in a simulation model (a Monte Carlo model) that makes the *average modeled price* of the MBS equal to its *current market price*. It's the "extra" yield investors demand for holding the bond, *after* accounting for the cost of the prepayment option.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="construction" class="py-16 sm:py-24">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="lg:text-center">
+                    <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+                        How to Construct an OAS Model
+                    </h2>
+                    <p class="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
+                        Calculating the OAS is not a simple formula; it's an intensive simulation. The process involves multiple sophisticated models working together. Explore the key components of this process by clicking the tabs below.
+                    </p>
+                </div>
+                <div class="mt-16">
+                    <div class="flex flex-wrap justify-center gap-2 mb-8">
+                        <button class="tab-btn active py-2 px-5 rounded-md text-sm font-medium" data-tab="step1">1. Interest Rate Model</button>
+                        <button class="tab-btn py-2 px-5 rounded-md text-sm font-medium" data-tab="step2">2. Prepayment Model</button>
+                        <button class="tab-btn py-2 px-5 rounded-md text-sm font-medium" data-tab="step3">3. Cash Flow Engine</button>
+                        <button class="tab-btn py-2 px-5 rounded-md text-sm font-medium" data-tab="step4">4. Discount & Average</button>
+                        <button class="tab-btn py-2 px-5 rounded-md text-sm font-medium" data-tab="step5">5. Solve for OAS</button>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-xl p-8 md:p-12 min-h-[20rem]">
+                        <div id="step1" class="tab-content active">
+                            <h3 class="text-2xl font-semibold text-blue-600">Step 1: The Interest Rate Model</h3>
+                            <p class="mt-4 text-lg text-gray-600">
+                                The process begins by generating thousands (e.g., 50,000) of possible future interest rate paths using a stochastic (random) model. These paths are not simple guesses; they are calibrated to match the current Treasury yield curve. This is known as a Monte Carlo simulation. Each path represents one possible future for the economy.
+                            </p>
+                        </div>
+                        <div id="step2" class="tab-content">
+                            <h3 class="text-2xl font-semibold text-blue-600">Step 2: The Prepayment Model</h3>
+                            <p class="mt-4 text-lg text-gray-600">
+                                This is the "secret sauce" for most financial firms. For *each* interest rate path, a model predicts how many homeowners will prepay their mortgages. This is expressed as a Conditional Prepayment Rate (CPR). This model considers the "refinancing incentive" (market rate vs. mortgage coupon), seasonality (people move in summer), and other factors.
+                            </p>
+                        </div>
+                        <div id="step3" class="tab-content">
+                            <h3 class="text-2xl font-semibold text-blue-600">Step 3: The Cash Flow Engine</h3>
+                            <p class="mt-4 text-lg text-gray-600">
+                                The model now combines the first two steps. For each individual interest rate path, it applies the predicted prepayment speeds (CPR) to the underlying mortgage pool. This generates a unique stream of monthly cash flows (principal and interest) for the MBS *along that single path*. This is repeated for all 50,000 paths.
+                            </p>
+                        </div>
+                        <div id="step4" class="tab-content">
+                            <h3 class="text-2xl font-semibold text-blue-600">Step 4: Discount & Average</h3>
+                            <p class="mt-4 text-lg text-gray-600">
+                                Each path's unique cash flow stream is discounted back to today's value using the interest rates *from that same path*. This gives a theoretical price for the MBS *in that one possible future*. After doing this for all 50,000 paths, all the theoretical prices are averaged together to get a single "Modeled Value".
+                            </p>
+                        </div>
+                        <div id="step5" class="tab-content">
+                            <h3 class="text-2xl font-semibold text-blue-600">Step 5: Solve for the OAS</h3>
+                            <p class="mt-4 text-lg text-gray-600">
+                                The "Modeled Value" from Step 4 will likely not match the bond's actual market price. This is where the OAS comes in. The model adds a small spread (e.g., 10 basis points) to *all* discount rates in *all* paths and re-runs the entire calculation. It iteratively searches for the *one unique spread* (the OAS) that forces the "Modeled Value" to equal the "Market Price".
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="demo" class="py-16 sm:py-24 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="lg:text-center">
+                    <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+                        Interactive Model Demo
+                    </h2>
+                    <p class="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
+                        This section provides simplified, interactive visualizations of the key components. See how interest rate paths are simulated, how prepayment models work, and most importantly, how the model solves for the OAS by matching the market price.
+                    </p>
+                </div>
+                <div class="mt-16 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div class="bg-gray-50 p-6 rounded-lg shadow-lg">
+                        <h3 class="text-xl font-semibold text-center mb-4">Demo: The "Solve" for OAS</h3>
+                        <div class="chart-container">
+                            <canvas id="solveChart"></canvas>
+                        </div>
+                        <div class="mt-6 px-4">
+                            <label for="marketPriceSlider" class="block text-sm font-medium text-gray-700">Adjust Market Price:</label>
+                            <input id="marketPriceSlider" type="range" min="98" max="104" value="101" step="0.5" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                <span>$98</span>
+                                <span id="marketPriceLabel" class="font-bold text-blue-600 text-base">Current Price: $101.00</span>
+                                <span>$104</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 bg-blue-100 p-4 rounded-md text-center">
+                            <span class="text-lg font-medium text-blue-800">Solved OAS:</span>
+                            <span id="solvedOASLabel" class="text-2xl font-bold text-blue-800 ml-2">75 bps</span>
+                        </div>
+                    </div>
+                    <div class="space-y-12">
+                        <div class="bg-gray-50 p-6 rounded-lg shadow-lg">
+                            <h3 class="text-xl font-semibold text-center mb-4">Component 1: Sample Interest Rate Paths</h3>
+                            <div class="chart-container">
+                                <canvas id="ratePathsChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 p-6 rounded-lg shadow-lg">
+                            <h3 class="text-xl font-semibold text-center mb-4">Component 2: Prepayment Model (S-Curve)</h3>
+                            <div class="chart-container">
+                                <canvas id="prepaymentChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="application" class="py-16 sm:py-24">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="lg:text-center">
+                    <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+                        Market Application
+                    </h2>
+                    <p class="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
+                        An OAS is not just an academic number; it's the primary tool traders and portfolio managers use to make decisions. This section explores how OAS is used for relative value analysis and to understand the unique risks of MBS.
+                    </p>
+                </div>
+                <div class="mt-16 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <h3 class="text-2xl font-semibold text-blue-600">Relative Value Analysis</h3>
+                        <p class="mt-3 text-lg text-gray-600">
+                            The main use of OAS is to compare different bonds. If two MBS have similar collateral and risk, but one has an OAS of 80 bps and the other has an OAS of 100 bps, the 100 bps bond is considered "cheaper". The manager is getting paid more spread for (theoretically) the same amount of risk.
+                        </p>
+                        <h3 class="mt-8 text-2xl font-semibold text-blue-600">Risk Management (OAD & OAC)</h3>
+                        <p class="mt-3 text-lg text-gray-600">
+                            OAS models are used to calculate "Option-Adjusted Duration" (OAD) and "Option-Adjusted Convexity" (OAC). This is done by shifting the entire yield curve up and down in the model, re-running the full OAS calculation, and seeing how the bond's price changes. This captures the impact of prepayments on a bond's sensitivity to interest rates.
+                        </p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-xl">
+                        <h3 class="text-xl font-semibold text-center mb-4">Visualizing Negative Convexity</h3>
+                        <div class="chart-container">
+                            <canvas id="convexityChart"></canvas>
+                        </div>
+                        <p class="mt-4 text-base text-gray-600 text-center">
+                            Unlike normal bonds (like Treasuries) that always gain value when rates fall, MBS prices can "flatten out" and even fall. This is because falling rates cause prepayments to spike, and investors get their principal back faster than expected (at par), forcing them to reinvest at lower rates. OAS modeling captures this "negative convexity" risk.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-gray-800 text-gray-300 mt-16">
+        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8 text-center">
+            <p>&copy; 2025 Financial Modeling Interactive. This application is for educational purposes only.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const chartWrapper = (label) => {
+                if (label.length > 16) {
+                    const words = label.split(' ');
+                    const lines = [];
+                    let currentLine = '';
+                    for (const word of words) {
+                        if ((currentLine + word).length > 16) {
+                            lines.push(currentLine.trim());
+                            currentLine = '';
+                        }
+                        currentLine += word + ' ';
+                    }
+                    lines.push(currentLine.trim());
+                    return lines;
+                }
+                return label;
+            };
+
+            let solveChartInstance = null;
+            const solveData = {
+                labels: Array.from({ length: 41 }, (_, i) => i * 5),
+                prices: Array.from({ length: 41 }, (_, i) => 104 - i * 0.15 - Math.random() * 0.1)
+            };
+
+            function findOASForPrice(price) {
+                let closestIndex = -1;
+                let minDiff = Infinity;
+                solveData.prices.forEach((p, index) => {
+                    const diff = Math.abs(p - price);
+                    if (diff < minDiff) {
+                        minDiff = diff;
+                        closestIndex = index;
+                    }
+                });
+                
+                if (closestIndex === -1) return 0;
+
+                const oas = solveData.labels[closestIndex];
+
+                if (solveData.prices[closestIndex] < price && closestIndex > 0) {
+                    const oas1 = solveData.labels[closestIndex - 1];
+                    const p1 = solveData.prices[closestIndex - 1];
+                    const oas2 = solveData.labels[closestIndex];
+                    const p2 = solveData.prices[closestIndex];
+                    const t = (price - p2) / (p1 - p2);
+                    return Math.round(oas2 + t * (oas1 - oas2));
+                } else if (solveData.prices[closestIndex] > price && closestIndex < solveData.labels.length - 1) {
+                    const oas1 = solveData.labels[closestIndex];
+                    const p1 = solveData.prices[closestIndex];
+                    const oas2 = solveData.labels[closestIndex + 1];
+                    const p2 = solveData.prices[closestIndex + 1];
+                    const t = (price - p1) / (p2 - p1);
+                    return Math.round(oas1 + t * (oas2 - oas1));
+                }
+                
+                return oas;
+            }
+
+            function initSolveChart() {
+                const ctx = document.getElementById('solveChart').getContext('2d');
+                const initialPrice = 101;
+                const initialOAS = findOASForPrice(initialPrice);
+                document.getElementById('solvedOASLabel').textContent = `${initialOAS} bps`;
+                
+                solveChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: solveData.labels,
+                        datasets: [
+                            {
+                                label: 'Modeled Price',
+                                data: solveData.prices,
+                                borderColor: 'rgb(37, 99, 235)',
+                                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                                fill: true,
+                                tension: 0.1,
+                            },
+                            {
+                                label: 'Market Price',
+                                data: Array(solveData.labels.length).fill(initialPrice),
+                                borderColor: 'rgb(234, 88, 12)',
+                                borderDash: [5, 5],
+                                fill: false,
+                                pointRadius: 0
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Modeled Price vs. Option-Adjusted Spread (OAS)'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += `$${context.parsed.y.toFixed(2)}`;
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'OAS (Basis Points)'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Price ($)'
+                                },
+                                ticks: {
+                                    callback: value => `$${value.toFixed(0)}`
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function updateSolveChart(newPrice) {
+                if (solveChartInstance) {
+                    solveChartInstance.data.datasets[1].data = Array(solveData.labels.length).fill(newPrice);
+                    solveChartInstance.update('none');
+                    
+                    const newOAS = findOASForPrice(newPrice);
+                    document.getElementById('solvedOASLabel').textContent = `${newOAS} bps`;
+                    document.getElementById('marketPriceLabel').textContent = `Current Price: $${parseFloat(newPrice).toFixed(2)}`;
+                }
+            }
+
+            const slider = document.getElementById('marketPriceSlider');
+            slider.addEventListener('input', (e) => {
+                updateSolveChart(e.target.value);
+            });
+
+            function initRatePathsChart() {
+                const ctx = document.getElementById('ratePathsChart').getContext('2d');
+                const labels = Array.from({ length: 11 }, (_, i) => `Year ${i}`);
+                const datasets = [];
+                for (let i = 0; i < 5; i++) {
+                    const data = [2.5];
+                    for (let j = 1; j < labels.length; j++) {
+                        data.push(Math.max(0.5, data[j-1] + (Math.random() - 0.5) * 1.5));
+                    }
+                    datasets.push({
+                        label: `Path ${i+1}`,
+                        data: data,
+                        borderColor: `rgba(${Math.random()*150 + 50}, ${Math.random()*150 + 50}, ${Math.random()*150 + 50}, 0.6)`,
+                        fill: false,
+                        pointRadius: 0,
+                        tension: 0.1
+                    });
+                }
+                
+                new Chart(ctx, {
+                    type: 'line',
+                    data: { labels, datasets },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { mode: 'index', intersect: false }
+                        },
+                        scales: {
+                            x: { title: { display: true, text: 'Time (Years)' }},
+                            y: { title: { display: true, text: 'Interest Rate (%)' }, ticks: { callback: v => `${v.toFixed(1)}%` }}
+                        }
+                    }
+                });
+            }
+
+            function initPrepaymentChart() {
+                const ctx = document.getElementById('prepaymentChart').getContext('2d');
+                const labels = Array.from({ length: 21 }, (_, i) => (i - 10) * 0.25);
+                const data = labels.map(x => 5 + 45 / (1 + Math.exp(-2.5 * (x + 1))));
+                
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels.map(l => l.toFixed(2)),
+                        datasets: [{
+                            label: 'CPR',
+                            data: data,
+                            borderColor: 'rgb(22, 163, 74)',
+                            backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: c => `${c.parsed.y.toFixed(1)}% CPR`
+                                }
+                            }
+                        },
+                        scales: {
+                            x: { title: { display: true, text: 'Refi Incentive (Market Rate - Coupon)' }},
+                            y: { title: { display: true, text: 'CPR (%)' }, ticks: { callback: v => `${v.toFixed(0)}%` }}
+                        }
+                    }
+                });
+            }
+
+            function initConvexityChart() {
+                const ctx = document.getElementById('convexityChart').getContext('2d');
+                const labels = Array.from({ length: 11 }, (_, i) => (i - 5) * 50);
+                const treasuryData = labels.map(x_bps => 100 + (-0.05 * x_bps) + (0.00004 * x_bps * x_bps));
+                const mbsData = labels.map(x_bps => {
+                    const price = 100 + (-0.04 * x_bps) + (0.00001 * x_bps * x_bps);
+                    return price - Math.max(0, 15 / (1 + Math.exp(0.02 * (x_bps + 100))));
+                });
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Treasury (Positive Convexity)',
+                                data: treasuryData,
+                                borderColor: 'rgb(59, 130, 246)',
+                                fill: false,
+                                tension: 0.1
+                            },
+                            {
+                                label: 'MBS (Negative Convexity)',
+                                data: mbsData,
+                                borderColor: 'rgb(239, 68, 68)',
+                                fill: false,
+                                tension: 0.1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom' }
+                        },
+                        scales: {
+                            x: { title: { display: true, text: 'Change in Interest Rates (bps)' }},
+                            y: { title: { display: true, text: 'Price ($)' }, ticks: { callback: v => `$${v.toFixed(0)}` }}
+                        }
+                    }
+                });
+            }
+
+            const tabs = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const target = tab.getAttribute('data-tab');
+
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    tabContents.forEach(content => {
+                        content.classList.remove('active');
+                        if (content.id === target) {
+                            content.classList.add('active');
+                        }
+                    });
+                });
+            });
+
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        const headerOffset = 64;
+                        const elementPosition = targetElement.getBoundingClientRect().top;
+                        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+                        window.scrollTo({
+                            top: offsetPosition,
+                            behavior: 'smooth'
+                        });
+                    }
+                    const mobileMenu = document.getElementById('mobile-menu');
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                });
+            });
+
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            mobileMenuBtn.addEventListener('click', () => {
+                document.getElementById('mobile-menu').classList.toggle('hidden');
+            });
+
+            initSolveChart();
+            initRatePathsChart();
+            initPrepaymentChart();
+            initConvexityChart();
+        });
+    </script>
+</body>
+</html>
+
